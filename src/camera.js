@@ -1,23 +1,31 @@
-//set up camera
+// set up camera
 export const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+// coords 
 let rho = 200;
 let phi = Math.PI / 2;
-let theta = 0;
+let theta = Math.PI / 2;
 
+// mouse commands
 let isMouseDown = false;
 let mouseDownX = 0;
 let mouseDownY = 0;
 let lastMouseX = 0;
 let lastMouseY = 0;
 
-
+// set camera position
 export const updateCameraPosition = () => {
+    rho = Math.max(150, Math.min(500, rho));
     camera.position.x = rho * Math.sin(phi) * Math.cos(theta);
     camera.position.y = rho * Math.cos(phi);
     camera.position.z = rho * Math.sin(phi) * Math.sin(theta);
     camera.lookAt(0, 0, 0);
 };
+
+// mouse event listners
+export function onMouseWheel(event){
+  rho += event.deltaY * 0.1;
+}
 
 export function onMouseDown(event) {
     isMouseDown = true;
@@ -43,24 +51,3 @@ export function onMouseMove(event) {
         lastMouseY = event.clientY;
     }
 }
-
-// rotates the camera (deprecated)
-function moveCamera() {
-    theta += 0.002;
-    // phi += 0.002;
-    camera.position.x = rho * Math.sin(phi) * Math.cos(theta);
-    camera.position.y = rho * Math.cos(phi);
-    camera.position.z = rho * Math.sin(phi) * Math.sin(theta);
-    camera.lookAt(0, 0, 0);
-}
-
-function constrainValue(value, lower, upper) {
-    if (value > upper) {
-        value = lower;
-    } else if (value < lower) {
-        value = upper;
-    }
-    return value;
-}
-
-

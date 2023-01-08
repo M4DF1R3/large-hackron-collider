@@ -1,31 +1,78 @@
 /**
  * checks whether sphere meshes are overlapping
  * 
- * @param {Mesh} sphere1 
- * @param {Mesh} sphere2 
+ * @param {Atom} atom1
+ * @param {Atom} atom2 
  * @returns {boolean} true if the spheres are colliding
  */
-export function isColliding(sphere1, sphere2) {
+export function isColliding(atom1, atom2) {
     // create bounding boxes for the spheres
-    const box1 = new THREE.Box3().setFromObject(sphere1);
-    const box2 = new THREE.Box3().setFromObject(sphere2);
+    const box1 = new THREE.Box3().setFromObject(atom1);
+    const box2 = new THREE.Box3().setFromObject(atom2);
 
     // update the bounding boxes
-    box1.setFromObject(sphere1);
-    box2.setFromObject(sphere2);
+    box1.setFromObject(atom1);
+    box2.setFromObject(atom2);
 
     // check if the bounding boxes intersect
     if (box1.intersectsBox(box2)) {
         // perform a more precise check to see if the spheres are colliding
-        const distSquared = sphere1.position.distanceToSquared(sphere2.position);
-        const radiusSum = sphere1.geometry.parameters.radius + sphere2.geometry.parameters.radius;
+        const distSquared = atom1.position.distanceToSquared(atom2.position);
+        const radiusSum = atom1.geometry.parameters.radius + atom2.geometry.parameters.radius;
         if (distSquared < radiusSum * radiusSum) {
-            console.log("collision!");
-            return true;
+            if (atom1.collisionState || atom2.collisionState) {
+                return false;
+            } else {
+                // console.log("collision!");
+                atom1.collisionState = true;
+                atom2.collisionState = true;
+                return true;
+            }
         }
     }
+    // if at this point, havent returned, then no collision occurred
+    atom1.collisionState = false;
+    atom2.collisionState = false;
     return false;
 }
+
+
+/**
+ * 
+ * @param {Atom} atom1 
+ * @param {Atom} atom2 
+ */
+export function elasticCollision(atom1, atom2) {
+    // from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
+
+    // get relative position & velocity
+    let dr = new THREE.Vector3();
+    dr.subVectors(atom2.position, atom1.position);
+    let dv = new THREE.Vector3();
+    dv.subVectors(atom2.velocity, atom1.velocity);
+
+    // get normal vector
+    let normal = dr.clone();
+    normal.normalize();
+
+    // reduced mass
+    let m_eff = 1 / (1 / atom1.mass + 1 / atom2.mass);
+
+    // impact speed
+    let v_imp = -1 * normal.dot(dv);
+
+    // impulse magnitude (COR = 1)
+    let j = 2 * m_eff * v_imp
+
+    // delta-v 
+    let dv1 = normal.clone().multiplyScalar(-j / atom1.mass);
+    let dv2 = normal.clone().multiplyScalar(j / atom2.mass);
+
+    // update velocities
+    atom1.velocity.add(dv1);
+    atom2.velocity.add(dv2);
+}
+
 
 /**
  * bounces the atom if it hits a boundary wall
