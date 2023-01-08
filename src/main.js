@@ -1,11 +1,14 @@
+import { isColliding } from "./collision.js";
+
 //set up scene
 const scene = new THREE.Scene();
 
 //set up camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const cameraDist = 200;
+const rho = 200;
 let theta = 0;
-camera.position.z = cameraDist;
+let phi = 0;
+camera.position.z = rho;
 
 //set up light source
 var light = new THREE.AmbientLight(0xffffff);
@@ -33,16 +36,14 @@ let velocity = new THREE.Vector3(3, 4, 0);
 scene.add(sphere1);
 scene.add(sphere2);
 
-// create bounding boxes for the spheres
-const box1 = new THREE.Box3().setFromObject(sphere1);
-const box2 = new THREE.Box3().setFromObject(sphere2);
-
 
 // rotates the camera
 function moveCamera() {
     theta += 0.002;
-    camera.position.x = cameraDist * Math.sin(theta);
-    camera.position.z = cameraDist * Math.cos(theta);
+    phi += 0.002;
+    camera.position.x = rho * Math.sin(theta) * Math.cos(phi);
+    camera.position.y = rho * Math.cos(phi);
+    camera.position.z = rho * Math.sin(theta) * Math.sin(phi);
     camera.lookAt(0, 0, 0);
 }
 
@@ -52,24 +53,11 @@ let phase = 0
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-    moveCamera()
+    isColliding(sphere1, sphere2);
+    moveCamera();
     sphere1.position.x = -5 + 20 * Math.sin(phase);
     sphere2.position.x = 5 - 20 * Math.sin(phase);
 
-    // update the bounding boxes
-    box1.setFromObject(sphere1);
-    box2.setFromObject(sphere2);
-
-    // check if the bounding boxes intersect
-    if (box1.intersectsBox(box2)) {
-        // perform a more precise check to see if the spheres are colliding
-        const distSquared = sphere1.position.distanceToSquared(sphere2.position);
-        const radiusSum = 20; // sum of the radii of the two spheres
-        if (distSquared < radiusSum * radiusSum) {
-            console.log('spheres are colliding');
-        }
-    }
-
-    phase+= 0.01
+    phase += 0.01
 }
 animate();
