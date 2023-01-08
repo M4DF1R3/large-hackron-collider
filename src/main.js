@@ -1,13 +1,13 @@
 import { isColliding, elasticCollision, handleWallCollision } from "./collision.js";
 import { Atom } from "./atom.js";
 import { camera, updateCameraPosition, onMouseMove, onMouseUp, onMouseDown, onMouseWheel } from "./camera.js";
+import { elements } from "./elements.js";
 
-// set up the scene
 const SCENE = new THREE.Scene();
 
-// set up RENDERER
+// set up renderer
 const RENDERER = new THREE.WebGLRenderer({
-    antialias: false,
+    antialias: true,
     powerPreference: "high-performance",
 });
 RENDERER.setPixelRatio(window.devicePixelRatio * 0.5);
@@ -23,18 +23,21 @@ const WALLMATERIAL = new THREE.MeshMatcapMaterial({ color: "#bbbbbb", transparen
 const WALLS = new THREE.Mesh(WALL_BOX, WALLMATERIAL);
 SCENE.add(WALLS, LINE);
 
+// custom randrange function
+Math.randomDec = function (low, high) {
+    return Math.random() * (high - low) + low;
+}
+
 // add spheres (particles)
-const ATOM_GEOMETRY = new THREE.SphereGeometry(10, 32, 16);
-const ATOM_MATERIAL = new THREE.MeshMatcapMaterial({ color: "cyan" });
-const NUM_OF_ATOMS = 2;
+const NUM_OF_ATOMS = 20;
 let atoms = [];
 for (let i = 0; i < NUM_OF_ATOMS; i++) {
-    atoms.push(new Atom(ATOM_GEOMETRY, ATOM_MATERIAL, new THREE.Vector3(1, 0, 0)));
+    atoms.push(new Atom(elements.hydrogen.geometry, elements.hydrogen.material,
+        new THREE.Vector3(Math.random(), Math.random(), Math.random()),
+        elements.hydrogen.mass, elements.hydrogen.ea));
+    atoms[i].position.set(Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2));
     SCENE.add(atoms[i]);
 }
-atoms[0].position.x = -30;
-atoms[0].mass = 5;
-atoms[1].position.x = 30;
 
 
 // animation loop
@@ -45,23 +48,32 @@ function animate() {
     updateCameraPosition();
 
     // check if any of the atoms are hitting the walls
-    atoms.forEach(atom => {
-        handleWallCollision(atom, WALLS);
-        atom.update();
-    });
-
-    // check each pair of atoms for collision
-    for (let i = 0; i < NUM_OF_ATOMS; i++) {
-        for (let j = i + 1; j < NUM_OF_ATOMS; j++) {
-            if (isColliding(atoms[i], atoms[j])) {
-                elasticCollision(atoms[i], atoms[j]);
+    if (run) {
+        // check each pair of atoms for collision
+        for (let i = 0; i < NUM_OF_ATOMS; i++) {
+            for (let j = i + 1; j < NUM_OF_ATOMS; j++) {
+                if (isColliding(atoms[i], atoms[j])) {
+                    atoms[i].collisionCount++;
+                    atoms[j].collisionCount++;
+                    elasticCollision(atoms[i], atoms[j]);
+                }
             }
         }
+
+        atoms.forEach(atom => {
+            // check if atoms are out of bounds
+            handleWallCollision(atom, WALLS);
+
+            // keep tabs on their collision histories to track possible spinners
+            atom.collisionHistory.pop();
+            atom.collisionHistory.unshift(atom.collisionCount);
+
+            // integrate
+            atom.update();
+        });
     }
 
-    if (run) {
-        requestAnimationFrame(animate);
-    }
+    requestAnimationFrame(animate);
 }
 animate();
 
@@ -75,4 +87,10 @@ window.addEventListener("keydown", (key) => {
     if (key.code == "KeyP") {
         run = false;
     };
+});
+window.addEventListener('keydown', (key) => {
+    // refresh key
+    if (key.code == "KeyR") {
+        window.location.reload();
+    }
 });

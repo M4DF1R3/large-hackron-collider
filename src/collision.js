@@ -23,17 +23,17 @@ export function isColliding(atom1, atom2) {
             if (atom1.collisionState || atom2.collisionState) {
                 return false;
             } else {
-                // console.log("collision!");
+                console.log("collision!");
                 atom1.collisionState = true;
                 atom2.collisionState = true;
                 return true;
             }
         }
+    } else {
+        atom1.collisionState = false;
+        atom2.collisionState = false;
+        return false;
     }
-    // if at this point, havent returned, then no collision occurred
-    atom1.collisionState = false;
-    atom2.collisionState = false;
-    return false;
 }
 
 
@@ -71,6 +71,16 @@ export function elasticCollision(atom1, atom2) {
     // update velocities
     atom1.velocity.add(dv1);
     atom2.velocity.add(dv2);
+
+    atom1.element = "helium";
+    atom2.element = "helium";
+
+    // forcibly separate spinners
+    if (atom1.collisionHistory[0] - atom1.collisionHistory[29] > 20 ||
+            atom2.collisionHistory[0] - atom2.collisionHistory[29] > 20) {
+        atom1.position.sub(dr);
+        atom2.position.add(dr);
+    }
 }
 
 
@@ -81,13 +91,21 @@ export function elasticCollision(atom1, atom2) {
  * @param {Mesh} walls
  */
 export function handleWallCollision(atom, walls) {
-    if (Math.abs(atom.position.x) + atom.geometry.parameters.radius > walls.geometry.parameters.width / 2) {
-        atom.velocity.x *= -1;
+    if (atom.position.x + atom.geometry.parameters.radius > walls.geometry.parameters.width / 2) {
+        atom.velocity.x = -Math.abs(atom.velocity.x);
+    } else if (atom.position.x - atom.geometry.parameters.radius < -walls.geometry.parameters.width / 2) {
+        atom.velocity.x = +Math.abs(atom.velocity.x);
     }
-    if (Math.abs(atom.position.y) + atom.geometry.parameters.radius > walls.geometry.parameters.height / 2) {
-        atom.velocity.y *= -1;
+
+    if (atom.position.y + atom.geometry.parameters.radius > walls.geometry.parameters.height / 2) {
+        atom.velocity.y = -Math.abs(atom.velocity.y);
+    } else if (atom.position.y - atom.geometry.parameters.radius < -walls.geometry.parameters.height / 2) {
+        atom.velocity.y = +Math.abs(atom.velocity.y);
     }
-    if (Math.abs(atom.position.z) + atom.geometry.parameters.radius > walls.geometry.parameters.depth / 2) {
-        atom.velocity.z *= -1;
+
+    if (atom.position.z + atom.geometry.parameters.radius > walls.geometry.parameters.depth / 2) {
+        atom.velocity.z = -Math.abs(atom.velocity.z);
+    } else if (atom.position.z - atom.geometry.parameters.radius < -walls.geometry.parameters.depth / 2) {
+        atom.velocity.z = +Math.abs(atom.velocity.z);
     }
 }
