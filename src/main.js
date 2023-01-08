@@ -1,4 +1,5 @@
-import { isColliding } from "./collision.js";
+import { isColliding, handleWallCollision } from "./collision.js";
+import { Atom } from "./atom.js";
 
 //set up scene
 const scene = new THREE.Scene();
@@ -7,7 +8,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const rho = 200;
 let theta = 0;
-let phi = 0;
+let phi = Math.PI / 2;
 camera.position.z = rho;
 
 //set up light source
@@ -30,34 +31,36 @@ scene.add(walls);
 //add 2 spheres
 const geometry = new THREE.SphereGeometry(10, 32, 16);
 const atomMaterial = new THREE.MeshMatcapMaterial({ color: "cyan" });
-const sphere1 = new THREE.Mesh(geometry, atomMaterial);
-const sphere2 = new THREE.Mesh(geometry, atomMaterial)
-let velocity = new THREE.Vector3(3, 4, 0);
+const sphere1 = new Atom(geometry, atomMaterial, new THREE.Vector3(0.5, 0, 0));
+const sphere2 = new Atom(geometry, atomMaterial, new THREE.Vector3(0.5, 0, 0))
 scene.add(sphere1);
 scene.add(sphere2);
+
 
 
 // rotates the camera
 function moveCamera() {
     theta += 0.002;
-    phi += 0.002;
-    camera.position.x = rho * Math.sin(theta) * Math.cos(phi);
+    // phi += 0.002;
+    camera.position.x = rho * Math.sin(phi) * Math.cos(theta);
     camera.position.y = rho * Math.cos(phi);
-    camera.position.z = rho * Math.sin(theta) * Math.sin(phi);
+    camera.position.z = rho * Math.sin(phi) * Math.sin(theta);
     camera.lookAt(0, 0, 0);
 }
 
-
-let phase = 0
+sphere1.position.x = -15;
+sphere2.position.x = 15;
 // animation loop
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-    isColliding(sphere1, sphere2);
-    moveCamera();
-    sphere1.position.x = -5 + 20 * Math.sin(phase);
-    sphere2.position.x = 5 - 20 * Math.sin(phase);
 
-    phase += 0.01
+    moveCamera();
+
+    handleWallCollision(sphere1, walls);
+    handleWallCollision(sphere2, walls);
+
+    sphere1.update();
+    sphere2.update();
 }
 animate();

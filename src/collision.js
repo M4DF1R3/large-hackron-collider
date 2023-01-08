@@ -27,21 +27,20 @@ export function isColliding(sphere1, sphere2) {
     return false;
 }
 
-
-// TODO: replace hardcoded temp with wall params
-let temp = 150;
-function wallCollision(sphere, walls) {
-    let width = walls.geometry.parameters.width;
-    let height = walls.geometry.parameters.height;
-    let depth = walls.geometry.parameters.depth;
-
-    let dir = [1,1,1];
-    if (Math.abs(sphere.position.x) + sphere.radius > temp / 2) {
-        dir[0]*=-1;
-    } else if (Math.abs(sphere.position.y) + sphere.radius > temp / 2) {
-        dir[1]*=-1;
-    } else if (Math.abs(sphere.position.z) + sphere.radius > temp / 2) {
-        dir[2]*=-1;
+/**
+ * bounces the atom if it hits a boundary wall
+ * 
+ * @param {Atom} atom
+ * @param {Mesh} walls
+ */
+export function handleWallCollision(atom, walls) {
+    if (Math.abs(atom.position.x) + atom.geometry.parameters.radius > walls.geometry.parameters.width / 2) {
+        atom.velocity.x *= -1;
+    }
+    if (Math.abs(atom.position.y) + atom.geometry.parameters.radius > walls.geometry.parameters.height / 2) {
+        atom.velocity.y *= -1;
+    }
+    if (Math.abs(atom.position.z) + atom.geometry.parameters.radius > walls.geometry.parameters.depth / 2) {
+        atom.velocity.z *= -1;
     }
 }
-
