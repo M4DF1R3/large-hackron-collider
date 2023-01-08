@@ -11,8 +11,11 @@ const RENDERER = new THREE.WebGLRenderer({
     powerPreference: "high-performance",
 });
 RENDERER.setPixelRatio(window.devicePixelRatio * 0.5);
-RENDERER.setSize(window.innerWidth, window.innerHeight);
-document.getElementById("my-div").appendChild(RENDERER.domElement);
+const CANVAS_DIV = document.getElementById("my-div");
+const DESIRED_ASPECT_RATIO = window.innerWidth / window.innerHeight;
+const NEW_HEIGHT = (window.innerWidth - 200) / DESIRED_ASPECT_RATIO;
+RENDERER.setSize(window.innerWidth - 200, NEW_HEIGHT);
+CANVAS_DIV.appendChild(RENDERER.domElement);
 
 // add walls box
 const WALLSIZE = 150;
@@ -70,7 +73,6 @@ function animate() {
 animate();
 
 // event listeners
-
 document.getElementsByTagName("canvas")[0].addEventListener('mousedown', onMouseDown);
 document.getElementsByTagName("canvas")[0].addEventListener('mouseup', onMouseUp);
 document.getElementsByTagName("canvas")[0].addEventListener('mousemove', onMouseMove);
@@ -95,7 +97,6 @@ window.addEventListener('keydown', (key) => {
 });
 
 function update_atoms() {
-    // let obj = [];
     for (let i = 0; i < numOfAtoms; i++) {
         atoms.push(new Atom(elements.hydrogen.geometry, elements.hydrogen.material,
             new THREE.Vector3(Math.random(), Math.random(), Math.random()),

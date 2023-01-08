@@ -1,0 +1,35 @@
+body {
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+#wrapper {
+    margin: 0px;
+    display: grid;
+    grid-template-columns: auto 200px;
+}
+
+
+#my-div {
+    grid-column-start: 1;
+    grid-column-end: 2;
+}
+
+#slidecontainer {
+    grid-column-start: 2;
+    grid-column-end: -1;
+    padding: 10px;
+}
+
+h1#title {
+    font-size: 18pt;
+}
+
+.submit-text {
+    width: 100px;
+}
+
+#footer {
+    background-color: green;
+}

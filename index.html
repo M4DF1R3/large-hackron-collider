@@ -6,21 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Large Hackron Collider</title>
-    <style>
-        body {
-            overflow: hidden;
-            margin: 0px;
-            display: grid;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="slidecontainer">
-        <input type="text" id="numAtoms">
-        <button id="submit">Submit</button>
+    <div id="wrapper">
+        <div id="my-div"></div>
+        <div id="slidecontainer" >
+            <h1 id="title">Large Hackron Collider</h1>
+            <input type="text" class="submit-text" id="numAtoms">
+            <button  id="submit">Submit</button>
+        </div>
     </div>
-    <div id="my-div"></div>
     <script src="src/three.js"></script>
     <script src="src/main.js" type="module"></script>
     <script src="src/camera.js" type="module"></script>
