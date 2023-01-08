@@ -1,3 +1,5 @@
+import { elements } from "./elements.js";
+
 /**
  * checks whether sphere meshes are overlapping
  * 
@@ -23,7 +25,6 @@ export function isColliding(atom1, atom2) {
             if (atom1.collisionState || atom2.collisionState) {
                 return false;
             } else {
-                console.log("collision!");
                 atom1.collisionState = true;
                 atom2.collisionState = true;
                 return true;
@@ -44,6 +45,7 @@ export function isColliding(atom1, atom2) {
  */
 export function elasticCollision(atom1, atom2) {
     // from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
+    let reacted = reaction(atom1, atom2);
 
     // get relative position & velocity
     let dr = new THREE.Vector3();
@@ -72,15 +74,26 @@ export function elasticCollision(atom1, atom2) {
     atom1.velocity.add(dv1);
     atom2.velocity.add(dv2);
 
-    // atom1.element = "helium";
-    // atom2.element = "helium";
-
     // forcibly separate spinners
     if (atom1.collisionHistory[0] - atom1.collisionHistory[29] > 20 ||
         atom2.collisionHistory[0] - atom2.collisionHistory[29] > 20) {
         atom1.position.sub(dr);
         atom2.position.add(dr);
     }
+    
+    return reacted;
+}
+
+
+function reaction(atom1, atom2) {
+    if (atom2.element in elements[atom1.element].reactions) {
+        // this reaction exists
+        let temp = atom1.element;
+        atom1.element = elements[atom1.element].reactions[atom2.element].becomes;
+        atom2.element = elements[temp].reactions[atom2.element].produces;
+        return true;
+    }
+    return false;
 }
 
 

@@ -7,7 +7,7 @@ const SCENE = new THREE.Scene();
 
 // set up renderer
 const RENDERER = new THREE.WebGLRenderer({
-    antialias: true,
+    antialias: false,
     powerPreference: "high-performance",
 });
 RENDERER.setPixelRatio(window.devicePixelRatio * 0.5);
@@ -51,11 +51,17 @@ function animate() {
                 if (isColliding(atoms[i], atoms[j])) {
                     atoms[i].collisionCount++;
                     atoms[j].collisionCount++;
-                    elasticCollision(atoms[i], atoms[j]);
+                    let oldI = atoms[i].element;
+                    let oldJ = atoms[j].element;
+                    if (elasticCollision(atoms[i], atoms[j])) {
+                        oldAtomList[oldI]--;
+                        oldAtomList[oldJ]--;
+                        oldAtomList[atoms[i].element]++;
+                        oldAtomList[atoms[j].element]++;
+                    }
                 }
             }
         }
-
         atoms.forEach(atom => {
             // check if atoms are out of bounds
             handleWallCollision(atom, WALLS, temperature);
@@ -68,26 +74,46 @@ function animate() {
             atom.update();
         });
     }
-
     requestAnimationFrame(animate);
 }
 animate();
 
 // dynamic atom updating
 function update_atoms() {
-    let oldNum = atoms.length;
-    // remove only as many atoms as needed
-    for (let i = 0; i < oldNum - numOfAtoms; i++) {
-        SCENE.remove(atoms.pop());
+    for (let key in atomList) {
+        let oldNum = oldAtomList[key];
+        let newNum = atomList[key];
+        let len = atoms.length;
+
+        // remove only as many atoms as needed
+        let toRemove = 0;
+        let removed = 0;
+        let removeIndices = [];
+
+        for (let i = 0; i < len; i++) {
+            if (atoms[i].element == key && removed < oldNum - newNum) {
+                SCENE.remove(atoms[i]);
+                toRemove++;
+                removeIndices.push(i);
+            }
+        }
+        for (let index in removeIndices) {
+            atoms.splice(index - removed, 1);
+            removed++;
+        }
+
+        // add new atoms if there aren't enough
+        for (let i = oldNum; i < newNum; i++) {
+            atoms.push(new Atom(key, elements[key].geometry, elements[key].material,
+                new THREE.Vector3(Math.randomDec(-0.1, 0.1), Math.randomDec(-0.1, 0.1), Math.randomDec(-0.1, 0.1)),
+                elements[key].mass));
+
+            atoms[atoms.length - 1].position.set(Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2));
+            SCENE.add(atoms[atoms.length - 1]);
+        }
     }
-    // add new atoms if there aren't enough
-    for (let i = oldNum; i < numOfAtoms; i++) {
-        atoms.push(new Atom(elements.hydrogen.geometry, elements.hydrogen.material,
-            new THREE.Vector3(Math.randomDec(-0.1, 0.1), Math.randomDec(-0.1, 0.1), Math.randomDec(-0.1, 0.1)),
-            elements.hydrogen.mass, elements.hydrogen.ea));
-        atoms[i].position.set(Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2));
-        SCENE.add(atoms[i]);
-    }
+
+    oldAtomList = { ...atomList };
 }
 
 // event listeners
@@ -96,10 +122,18 @@ document.getElementsByTagName("canvas")[0].addEventListener('mouseup', onMouseUp
 document.getElementsByTagName("canvas")[0].addEventListener('mousemove', onMouseMove);
 document.getElementsByTagName("canvas")[0].addEventListener('wheel', onMouseWheel)
 
+let oldAtomList = { "hydrogen": 0, "helium": 0, "nitrogen": 0, "oxygen": 0 };
+let atomList = { "hydrogen": 0, "helium": 0, "nitrogen": 0, "oxygen": 0 };
+
 document.getElementById("submit").addEventListener("click", () => {
-    numOfAtoms = Math.floor(Number(document.getElementById("numAtoms").value));
+    let sum = 0;
+    for (let key in atomList) {
+        atomList[key] = Math.floor(Number(document.getElementById(key).value));
+        sum += atomList[key];
+    }
+    numOfAtoms = sum;
     temperature = Number(document.getElementById("temp").value);
-    if (isNaN(numOfAtoms) || isNaN(temperature) || numOfAtoms < 0 || temperature < 0) {
+    if (isNaN(numOfAtoms) || isNaN(temperature) || temperature < 0 || sum > 120) {
         numOfAtoms = 0;
     }
     update_atoms();
@@ -109,7 +143,7 @@ document.getElementById("submit").addEventListener("click", () => {
 window.addEventListener('keydown', (key) => {
     // option to stop program by pressing 'p'
     if (key.code == "KeyP") {
-        run = false;
+        run = !run;
     };
     // refresh key
     if (key.code == "KeyR") {

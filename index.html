@@ -14,15 +14,31 @@
         <div id="my-div"></div>
         <div id="slidecontainer">
             <h1 id="title">Large Hackron Collider</h1>
-            Number of Atoms:
-            <input type="text" class="submit-text" id="numAtoms">
+            Number of Blue:
+            <input type="text" class="submit-text" id="hydrogen" value="30">
+            <br>
+            <br>
+            Number of Green:
+            <input type="text" class="submit-text" id="helium" value="0">
+            <br>
+            <br>
+            Number of Red:
+            <input type="text" class="submit-text" id="nitrogen" value="0">
+            <br>
+            <br>
+            Number of Yellow:
+            <input type="text" class="submit-text" id="oxygen" value="0">
             <br>
             <br>
             Temperature (Kelvin):
-            <input type="text" class="submit-text" id="temp">
+            <input type="text" class="submit-text" id="temp" value="300">
             <br>
             <br>
             <button id="submit">Submit</button>
+            <p>Press "p" to pause/unpause the simulation</p>
+            <p>Press "r" to refresh the simulation</p>
+            <p>Click and drag on the simulation to pan the camera, and scroll to zoom</p>
+            <p>The simulation is currently limited to 120 atoms total</p>
         </div>
     </div>
     <script src="src/three.js"></script>
