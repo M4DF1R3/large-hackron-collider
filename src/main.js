@@ -12,7 +12,7 @@ const RENDERER = new THREE.WebGLRenderer({
 });
 RENDERER.setPixelRatio(window.devicePixelRatio * 0.5);
 RENDERER.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(RENDERER.domElement);
+document.getElementById("my-div").appendChild(RENDERER.domElement);
 
 // add walls box
 const WALLSIZE = 150;
@@ -28,17 +28,9 @@ Math.randomDec = function (low, high) {
     return Math.random() * (high - low) + low;
 }
 
-// add spheres (particles)
-const NUM_OF_ATOMS = 20;
+// global atoms vars
+let numOfAtoms = 0;
 let atoms = [];
-for (let i = 0; i < NUM_OF_ATOMS; i++) {
-    atoms.push(new Atom(elements.hydrogen.geometry, elements.hydrogen.material,
-        new THREE.Vector3(Math.random(), Math.random(), Math.random()),
-        elements.hydrogen.mass, elements.hydrogen.ea));
-    atoms[i].position.set(Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2));
-    SCENE.add(atoms[i]);
-}
-
 
 // animation loop
 let run = true;
@@ -50,8 +42,8 @@ function animate() {
     // check if any of the atoms are hitting the walls
     if (run) {
         // check each pair of atoms for collision
-        for (let i = 0; i < NUM_OF_ATOMS; i++) {
-            for (let j = i + 1; j < NUM_OF_ATOMS; j++) {
+        for (let i = 0; i < numOfAtoms; i++) {
+            for (let j = i + 1; j < numOfAtoms; j++) {
                 if (isColliding(atoms[i], atoms[j])) {
                     atoms[i].collisionCount++;
                     atoms[j].collisionCount++;
@@ -78,19 +70,37 @@ function animate() {
 animate();
 
 // event listeners
-window.addEventListener('mousedown', onMouseDown);
-window.addEventListener('mouseup', onMouseUp);
-window.addEventListener('mousemove', onMouseMove);
-window.addEventListener('wheel', onMouseWheel)
-window.addEventListener("keydown", (key) => {
+
+document.getElementsByTagName("canvas")[0].addEventListener('mousedown', onMouseDown);
+document.getElementsByTagName("canvas")[0].addEventListener('mouseup', onMouseUp);
+document.getElementsByTagName("canvas")[0].addEventListener('mousemove', onMouseMove);
+document.getElementsByTagName("canvas")[0].addEventListener('wheel', onMouseWheel)
+
+document.getElementById("submit").addEventListener("click", () => {
+    numOfAtoms = Number(document.getElementById("numAtoms").value);
+    console.log(numOfAtoms);
+    update_atoms();
+    animate();
+});
+
+window.addEventListener('keydown', (key) => {
     // option to stop program by pressing 'p'
     if (key.code == "KeyP") {
         run = false;
     };
-});
-window.addEventListener('keydown', (key) => {
     // refresh key
     if (key.code == "KeyR") {
         window.location.reload();
     }
 });
+
+function update_atoms() {
+    // let obj = [];
+    for (let i = 0; i < numOfAtoms; i++) {
+        atoms.push(new Atom(elements.hydrogen.geometry, elements.hydrogen.material,
+            new THREE.Vector3(Math.random(), Math.random(), Math.random()),
+            elements.hydrogen.mass, elements.hydrogen.ea));
+        atoms[i].position.set(Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2), Math.randomDec(-WALLSIZE / 2, WALLSIZE / 2));
+        SCENE.add(atoms[i]);
+    }
+}

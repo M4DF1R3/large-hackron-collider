@@ -10,11 +10,17 @@
         body {
             overflow: hidden;
             margin: 0px;
+            display: grid;
         }
     </style>
 </head>
 
 <body>
+    <div class="slidecontainer">
+        <input type="text" id="numAtoms">
+        <button id="submit">Submit</button>
+    </div>
+    <div id="my-div"></div>
     <script src="src/three.js"></script>
     <script src="src/main.js" type="module"></script>
     <script src="src/camera.js" type="module"></script>
