@@ -1,66 +1,58 @@
 import { isColliding, handleWallCollision } from "./collision.js";
 import { Atom } from "./atom.js";
+import { camera, updateCameraPosition, onMouseMove, onMouseUp, onMouseDown } from "./camera.js";
 
 //set up scene
-const scene = new THREE.Scene();
-
-//set up camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const rho = 200;
-let theta = 0;
-let phi = Math.PI / 2;
-camera.position.z = rho;
+const SCENE = new THREE.Scene();
 
 //set up light source
 var light = new THREE.AmbientLight(0xffffff);
 light.position.set(0, 1, 1).normalize();
-scene.add(light);
+SCENE.add(light);
 
-//set up renderer
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+//set up RENDERER
+const RENDERER = new THREE.WebGLRenderer();
+RENDERER.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(RENDERER.domElement);
 
 //add walls box
-const wallSize = 150;
-const wall_box = new THREE.BoxGeometry(wallSize, wallSize, wallSize);
-const wallMaterial = new THREE.MeshMatcapMaterial({ color: "#bbbbbb", transparent: true, opacity: 0.5 });
-const walls = new THREE.Mesh(wall_box, wallMaterial);
-scene.add(walls);
+const WALLSIZE = 150;
+const WALL_BOX = new THREE.BoxGeometry(WALLSIZE, WALLSIZE, WALLSIZE);
+const EDGES = new THREE.EdgesGeometry(WALL_BOX);
+const LINE = new THREE.LineSegments(EDGES, new THREE.LineBasicMaterial({ color: 0xffffff }));
+const WALLMATERIAL = new THREE.MeshMatcapMaterial({ color: "#bbbbbb", transparent: true, opacity: 0.5 });
+const WALLS = new THREE.Mesh(WALL_BOX, WALLMATERIAL);
+SCENE.add(WALLS);
+SCENE.add(LINE);
 
 //add 2 spheres
-const geometry = new THREE.SphereGeometry(10, 32, 16);
-const atomMaterial = new THREE.MeshMatcapMaterial({ color: "cyan" });
-const sphere1 = new Atom(geometry, atomMaterial, new THREE.Vector3(0.5, 0, 0));
-const sphere2 = new Atom(geometry, atomMaterial, new THREE.Vector3(0.5, 0, 0))
-scene.add(sphere1);
-scene.add(sphere2);
+const ATOM_GEOMETRY = new THREE.SphereGeometry(10, 32, 16);
+const ATOM_MATERIAL = new THREE.MeshMatcapMaterial({ color: "cyan" });
+const SPHERE1 = new Atom(ATOM_GEOMETRY, ATOM_MATERIAL, new THREE.Vector3(0.5, 0.2, 0));
+const SPHERE2 = new Atom(ATOM_GEOMETRY, ATOM_MATERIAL, new THREE.Vector3(0.5, 0, 0.2));
+SCENE.add(SPHERE1);
+SCENE.add(SPHERE2);
 
 
+SPHERE1.position.x = -15;
+SPHERE2.position.x = 15;
 
-// rotates the camera
-function moveCamera() {
-    theta += 0.002;
-    // phi += 0.002;
-    camera.position.x = rho * Math.sin(phi) * Math.cos(theta);
-    camera.position.y = rho * Math.cos(phi);
-    camera.position.z = rho * Math.sin(phi) * Math.sin(theta);
-    camera.lookAt(0, 0, 0);
-}
-
-sphere1.position.x = -15;
-sphere2.position.x = 15;
 // animation loop
 function animate() {
+    RENDERER.render(SCENE, camera);
+
+    updateCameraPosition();
+
+    handleWallCollision(SPHERE1, WALLS);
+    handleWallCollision(SPHERE2, WALLS);
+
+    SPHERE1.update();
+    SPHERE2.update();
+
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-
-    moveCamera();
-
-    handleWallCollision(sphere1, walls);
-    handleWallCollision(sphere2, walls);
-
-    sphere1.update();
-    sphere2.update();
 }
 animate();
