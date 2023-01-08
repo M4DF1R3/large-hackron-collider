@@ -72,12 +72,12 @@ export function elasticCollision(atom1, atom2) {
     atom1.velocity.add(dv1);
     atom2.velocity.add(dv2);
 
-    atom1.element = "helium";
-    atom2.element = "helium";
+    // atom1.element = "helium";
+    // atom2.element = "helium";
 
     // forcibly separate spinners
     if (atom1.collisionHistory[0] - atom1.collisionHistory[29] > 20 ||
-            atom2.collisionHistory[0] - atom2.collisionHistory[29] > 20) {
+        atom2.collisionHistory[0] - atom2.collisionHistory[29] > 20) {
         atom1.position.sub(dr);
         atom2.position.add(dr);
     }
@@ -90,22 +90,23 @@ export function elasticCollision(atom1, atom2) {
  * @param {Atom} atom
  * @param {Mesh} walls
  */
-export function handleWallCollision(atom, walls) {
+export function handleWallCollision(atom, walls, desiredTemp) {
+    let scalingFactor = Math.sqrt(((0.0004 * desiredTemp - atom.energy) / 2 + atom.energy) / atom.energy);
     if (atom.position.x + atom.geometry.parameters.radius > walls.geometry.parameters.width / 2) {
-        atom.velocity.x = -Math.abs(atom.velocity.x);
+        atom.velocity.x = -Math.abs(atom.velocity.x) * scalingFactor;
     } else if (atom.position.x - atom.geometry.parameters.radius < -walls.geometry.parameters.width / 2) {
-        atom.velocity.x = +Math.abs(atom.velocity.x);
+        atom.velocity.x = +Math.abs(atom.velocity.x) * scalingFactor;
     }
 
     if (atom.position.y + atom.geometry.parameters.radius > walls.geometry.parameters.height / 2) {
-        atom.velocity.y = -Math.abs(atom.velocity.y);
+        atom.velocity.y = -Math.abs(atom.velocity.y) * scalingFactor;
     } else if (atom.position.y - atom.geometry.parameters.radius < -walls.geometry.parameters.height / 2) {
-        atom.velocity.y = +Math.abs(atom.velocity.y);
+        atom.velocity.y = +Math.abs(atom.velocity.y) * scalingFactor;
     }
 
     if (atom.position.z + atom.geometry.parameters.radius > walls.geometry.parameters.depth / 2) {
-        atom.velocity.z = -Math.abs(atom.velocity.z);
+        atom.velocity.z = -Math.abs(atom.velocity.z) * scalingFactor;
     } else if (atom.position.z - atom.geometry.parameters.radius < -walls.geometry.parameters.depth / 2) {
-        atom.velocity.z = +Math.abs(atom.velocity.z);
+        atom.velocity.z = +Math.abs(atom.velocity.z) * scalingFactor;
     }
 }

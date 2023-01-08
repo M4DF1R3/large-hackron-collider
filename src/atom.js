@@ -21,7 +21,7 @@ export class Atom extends THREE.Mesh {
     }
 
     get speedSquared() {
-        return this.velocity.lengthSq;
+        return this.velocity.lengthSq();
     }
 
     get energy() {
